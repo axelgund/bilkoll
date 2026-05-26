@@ -64,7 +64,7 @@ function makeGetter(kv: Record<string, string>) {
 }
 
 async function biluppgifter(reg: string) {
-  const res = await fetch(`https://biluppgifter.se/fordon/${reg}/`, { headers: HEADERS })
+  const res = await fetch(`https://api.scraperapi.com/?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(`https://biluppgifter.se/fordon/${reg}/`)}`)
   if (!res.ok) return null
 
   const $ = cheerio.load(await res.text())
@@ -134,7 +134,7 @@ async function biluppgifter(reg: string) {
 }
 
 async function carinfo(reg: string) {
-  const res = await fetch(`https://www.car.info/sv-se/license-plate/SE/${reg}`, { headers: HEADERS })
+  const res = await fetch(`https://api.scraperapi.com/?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(`https://www.car.info/sv-se/license-plate/SE/${reg}`)}`)
   if (res.status === 429 || !res.ok) return null
 
   const $ = cheerio.load(await res.text())
@@ -217,3 +217,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(null, { status: 502 })
   }
 }
+

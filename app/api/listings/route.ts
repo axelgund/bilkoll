@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     url.searchParams.set('q', `${make} ${model} ${year}`)
     url.searchParams.set('cg', '1020')
 
-    const res = await fetch(url.toString(), { headers: HEADERS })
+    const res = await fetch(`https://api.scraperapi.com/?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(url.toString())}`)
     if (!res.ok) return NextResponse.json([])
 
     const $ = cheerio.load(await res.text())
@@ -92,3 +92,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json([])
   }
 }
+
