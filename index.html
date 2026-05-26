@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilkoll — Marknadspris på sekunder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:           #F5F4EF;
+            --surface:      #FFFFFF;
+            --text:         #0F0F0F;
+            --text-2:       #666660;
+            --accent:       #00529B;
+            --accent-hover: #003F7A;
+            --border:       #E5E4DE;
+            --plate-yellow: #FECC02;
+            --plate-blue:   #003F8A;
+            --good:         #1A7F4B;
+            --fair:         #C47A12;
+            --bad:          #C93030;
+            --good-bg:      #EBF7F2;
+            --fair-bg:      #FDF5E4;
+            --bad-bg:       #FAEAEA;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── NAV ─────────────────────────────────── */
+        nav {
+            padding: 22px 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .nav-hint {
+            font-size: 12px;
+            color: var(--text-2);
+            letter-spacing: 0.02em;
+        }
+
+        /* ─── STATES ──────────────────────────────── */
+        .state { display: none; }
+        .state.active { display: flex; flex-direction: column; }
+
+        /* ─── LANDING ─────────────────────────────── */
+        #landing {
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 130px 24px 80px;
+            text-align: center;
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            margin-bottom: 22px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(44px, 7.5vw, 82px);
+            font-weight: 600;
+            line-height: 1.05;
+            margin-bottom: 18px;
+            max-width: 680px;
+            animation: fadeUp 0.5s ease 0.08s both;
+        }
+
+        .hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .hero-sub {
+            font-size: 17px;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.6;
+            margin-bottom: 52px;
+            max-width: 400px;
+            animation: fadeUp 0.5s ease 0.16s both;
+        }
+
+        /* ─── PLATE INPUT ──────────────────────────── */
+        .plate-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.5s ease 0.24s both;
+        }
+
+        .plate-wrapper {
+            display: inline-flex;
+            align-items: stretch;
+            background: var(--plate-yellow);
+            border-radius: 9px;
+            border: 3px solid var(--plate-blue);
+            overflow: hidden;
+            box-shadow: 0 4px 28px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.07);
+            transition: box-shadow 0.2s;
+        }
+
+        .plate-wrapper:focus-within {
+            box-shadow: 0 6px 40px rgba(0, 82, 155, 0.28), 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .plate-eu {
+            background: var(--plate-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 9px;
+            gap: 4px;
+            min-height: 68px;
+        }
+
+        .eu-stars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5px;
+            width: 18px;
+        }
+
+        .eu-stars span {
+            color: var(--plate-yellow);
+            font-size: 5.5px;
+            line-height: 1;
+            text-align: center;
+        }
+
+        .eu-country {
+            color: var(--plate-yellow);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-top: 2px;
+        }
+
+        .plate-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'DM Mono', monospace;
+            font-size: clamp(28px, 5vw, 38px);
+            font-weight: 500;
+            color: var(--plate-blue);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 14px 22px 14px 14px;
+            width: 250px;
+            text-align: center;
+        }
+
+        .plate-input::placeholder {
+            color: rgba(0, 63, 138, 0.3);
+        }
+
+        .search-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            padding: 0 28px;
+            height: 68px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            box-shadow: 0 4px 14px rgba(0, 82, 155, 0.28);
+        }
+
+        .search-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 82, 155, 0.35);
+        }
+
+        .search-btn:active { transform: translateY(0); }
+
+        .trust-row {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            margin-top: 52px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeUp 0.5s ease 0.32s both;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-2);
+        }
+
+        .trust-pip {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.45;
+        }
+
+        /* ─── LOADING ─────────────────────────────── */
+        #loading {
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 24px 60px;
+            text-align: center;
+            gap: 0;
+        }
+
+        .loading-plate-display {
+            display: inline-flex;
+            align-items: stretch;
+            background: var(--plate-yellow);
+            border: 3px solid var(--plate-blue);
+            border-radius: 9px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .loading-plate-eu {
+            background: var(--plate-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 7px;
+            gap: 3px;
+        }
+
+        .loading-plate-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 30px;
+            font-weight: 500;
+            color: var(--plate-blue);
+            letter-spacing: 0.12em;
+            padding: 10px 22px 10px 14px;
+            text-align: center;
+        }
+
+        .loading-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--text-2);
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .loading-steps {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
+            max-width: 340px;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 15px;
+            color: var(--text-2);
+            transition: color 0.3s;
+        }
+
+        .loading-step.active { color: var(--accent); font-weight: 500; }
+        .loading-step.done   { color: var(--text); }
+
+        .step-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 11px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .step-icon svg { opacity: 0; transition: opacity 0.2s; }
+        .loading-step.done .step-icon {
+            background: var(--good);
+            border-color: var(--good);
+        }
+        .loading-step.done .step-icon svg { opacity: 1; color: white; }
+        .loading-step.active .step-icon {
+            border-color: var(--accent);
+            border-top-color: transparent;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── RESULTS ─────────────────────────────── */
+        #results {
+            padding: 100px 24px 64px;
+            align-items: center;
+        }
+
+        .results-wrap {
+            max-width: 780px;
+            width: 100%;
+        }
+
+        .car-header {
+            margin-bottom: 28px;
+            animation: fadeUp 0.45s ease both;
+        }
+
+        .car-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(34px, 5.5vw, 54px);
+            font-weight: 600;
+            line-height: 1.08;
+            margin-bottom: 14px;
+        }
+
+        .chip-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 5px 14px;
+            font-size: 13px;
+            color: var(--text-2);
+        }
+
+        /* ─── VERDICT ─────────────────────────────── */
+        .verdict-card {
+            background: var(--good-bg);
+            border: 1.5px solid rgba(26, 127, 75, 0.2);
+            border-radius: 16px;
+            padding: 28px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            animation: fadeUp 0.45s ease 0.08s both;
+        }
+
+        .verdict-card.fair { background: var(--fair-bg); border-color: rgba(196,122,18,0.2); }
+        .verdict-card.bad  { background: var(--bad-bg);  border-color: rgba(201,48,48,0.2); }
+
+        .verdict-tag {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--good);
+            margin-bottom: 6px;
+        }
+        .verdict-card.fair .verdict-tag { color: var(--fair); }
+        .verdict-card.bad  .verdict-tag { color: var(--bad); }
+
+        .verdict-heading {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--good);
+            line-height: 1;
+        }
+        .verdict-card.fair .verdict-heading { color: var(--fair); }
+        .verdict-card.bad  .verdict-heading { color: var(--bad); }
+
+        .verdict-sub { font-size: 14px; color: var(--text-2); margin-top: 5px; }
+
+        .verdict-price-block { text-align: right; }
+        .verdict-price-label { font-size: 12px; color: var(--text-2); margin-bottom: 5px; }
+        .verdict-price-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 30px;
+            font-weight: 500;
+        }
+
+        /* ─── PRICE RANGE ─────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 16px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            margin-bottom: 24px;
+        }
+
+        .bar-wrap {
+            margin-bottom: 28px;
+        }
+
+        .bar-track {
+            height: 8px;
+            background: var(--border);
+            border-radius: 100px;
+            position: relative;
+        }
+
+        .bar-fill {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 75%;
+            background: linear-gradient(90deg, #C8EDD9, var(--good));
+            border-radius: 100px;
+        }
+
+        .bar-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            cursor: default;
+        }
+
+        .bar-marker.m-listed  { background: var(--accent); left: 40%; }
+        .bar-marker.m-median  { background: #333; left: 62%; }
+
+        .bar-edge-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-2);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .legend {
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-2);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* ─── STATS ───────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+        }
+
+        .stat-val {
+            font-family: 'DM Mono', monospace;
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .stat-lbl {
+            font-size: 12px;
+            color: var(--text-2);
+        }
+
+        /* ─── LISTINGS ────────────────────────────── */
+        .listings-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        .listings-head {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 2fr 0.7fr 1fr 1fr 48px;
+            gap: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-2);
+        }
+
+        .listing-row {
+            padding: 15px 24px;
+            display: grid;
+            grid-template-columns: 2fr 0.7fr 1fr 1fr 48px;
+            gap: 12px;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            transition: background 0.12s;
+            cursor: default;
+        }
+
+        .listing-row:last-child { border-bottom: none; }
+        .listing-row:hover { background: var(--bg); }
+
+        .l-name { font-weight: 500; }
+        .l-mono {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: var(--text-2);
+        }
+        .l-price {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .l-price.low  { color: var(--good); }
+        .l-price.high { color: var(--bad); }
+        .l-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 12px;
+            opacity: 0.65;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+        .l-link:hover { opacity: 1; }
+
+        /* ─── ACTIONS ─────────────────────────────── */
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            padding: 14px 28px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 14px 28px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-ghost:hover { border-color: var(--text-2); color: var(--text); }
+
+        /* ─── FOOTER ──────────────────────────────── */
+        footer {
+            margin-top: auto;
+            padding: 28px 36px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-2);
+        }
+
+        /* ─── ANIMATIONS ──────────────────────────── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .a1 { animation: fadeUp 0.45s ease 0.00s both; }
+        .a2 { animation: fadeUp 0.45s ease 0.10s both; }
+        .a3 { animation: fadeUp 0.45s ease 0.18s both; }
+        .a4 { animation: fadeUp 0.45s ease 0.26s both; }
+
+        /* ─── RESPONSIVE ──────────────────────────── */
+        @media (max-width: 640px) {
+            nav { padding: 18px 20px; }
+            .plate-input { width: 190px; font-size: 26px; }
+            .search-btn { height: 60px; padding: 0 22px; font-size: 14px; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .verdict-price-block { display: none; }
+            .listings-head,
+            .listing-row {
+                grid-template-columns: 1.5fr 1fr 1fr 40px;
+            }
+            .listings-head > span:nth-child(3),
+            .listing-row > .l-mono:nth-child(3) { display: none; }
+            footer { justify-content: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="logo" onclick="showLanding()">Bil<span>koll</span></a>
+    <span class="nav-hint">Baserat på Blocket.se</span>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════
+     STATE 1 — LANDING
+════════════════════════════════════════════════ -->
+<main id="landing" class="state active">
+    <p class="eyebrow">Oberoende prisanalys &middot; Sverige</p>
+
+    <h1 class="hero-title">
+        Vad är <em>bilen</em><br>egentligen värd?
+    </h1>
+
+    <p class="hero-sub">
+        Ange registreringsnumret — vi analyserar aktuella annonser på Blocket och ger dig priset på sekunder.
+    </p>
+
+    <div class="plate-row">
+        <div class="plate-wrapper">
+            <div class="plate-eu">
+                <div class="eu-stars">
+                    <span>★</span><span>★</span><span>★</span>
+                    <span>★</span><span></span><span>★</span>
+                    <span>★</span><span>★</span><span>★</span>
+                </div>
+                <span class="eu-country">S</span>
+            </div>
+            <input
+                type="text"
+                class="plate-input"
+                id="regInput"
+                placeholder="ABC 123"
+                maxlength="7"
+                autocomplete="off"
+                spellcheck="false"
+            >
+        </div>
+        <button class="search-btn" onclick="startSearch()">
+            Sök pris
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="trust-row">
+        <div class="trust-item"><div class="trust-pip"></div>Gratis &amp; ingen registrering</div>
+        <div class="trust-item"><div class="trust-pip"></div>Realtidsdata från Blocket</div>
+        <div class="trust-item"><div class="trust-pip"></div>Transportstyrelsendata</div>
+    </div>
+</main>
+
+
+<!-- ═══════════════════════════════════════════════
+     STATE 2 — LOADING
+════════════════════════════════════════════════ -->
+<div id="loading" class="state">
+    <div class="loading-plate-display">
+        <div class="loading-plate-eu">
+            <div class="eu-stars">
+                <span>★</span><span>★</span><span>★</span>
+                <span>★</span><span></span><span>★</span>
+                <span>★</span><span>★</span><span>★</span>
+            </div>
+            <span class="eu-country">S</span>
+        </div>
+        <div class="loading-plate-text" id="loadingPlateText">ABC 123</div>
+    </div>
+
+    <p class="loading-title">Analyserar bilen&hellip;</p>
+
+    <div class="loading-steps">
+        <div class="loading-step" id="step1">
+            <div class="step-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </div>
+            <span>Hämtar fordonsinformation</span>
+        </div>
+        <div class="loading-step" id="step2">
+            <div class="step-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </div>
+            <span>Söker liknande bilar på Blocket</span>
+        </div>
+        <div class="loading-step" id="step3">
+            <div class="step-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </div>
+            <span>Beräknar marknadsvärde</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     STATE 3 — RESULTS
+════════════════════════════════════════════════ -->
+<div id="results" class="state">
+    <div class="results-wrap">
+
+        <!-- Car header -->
+        <div class="car-header a1">
+            <h1 class="car-name">Volvo V60 T4 Momentum</h1>
+            <div class="chip-row">
+                <span class="chip">2019</span>
+                <span class="chip">Bensin</span>
+                <span class="chip">190 hk</span>
+                <span class="chip">Automat</span>
+                <span class="chip">Blå metallic</span>
+            </div>
+        </div>
+
+        <!-- Verdict -->
+        <div class="verdict-card a2">
+            <div>
+                <div class="verdict-tag">Bedömning</div>
+                <div class="verdict-heading">Bra pris</div>
+                <div class="verdict-sub">16 000 kr under marknadsmedian</div>
+            </div>
+            <div class="verdict-price-block">
+                <div class="verdict-price-label">Begärt pris</div>
+                <div class="verdict-price-num">249 000 kr</div>
+            </div>
+        </div>
+
+        <!-- Price range -->
+        <div class="card a3">
+            <div class="card-label">Prisintervall på marknaden</div>
+            <div class="bar-wrap">
+                <div class="bar-track">
+                    <div class="bar-fill"></div>
+                    <div class="bar-marker m-listed" title="Begärt pris: 249 000 kr"></div>
+                    <div class="bar-marker m-median" title="Median: 265 000 kr"></div>
+                </div>
+                <div class="bar-edge-labels">
+                    <span>225 000 kr</span>
+                    <span>285 000 kr</span>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--accent)"></div>
+                    <span>Begärt pris &mdash; 249 000 kr</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#333"></div>
+                    <span>Marknadsmedian &mdash; 265 000 kr</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid a3">
+            <div class="stat-card">
+                <div class="stat-val">18</div>
+                <div class="stat-lbl">Liknande annonser</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">265 000</div>
+                <div class="stat-lbl">Medianpris (kr)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">6,1 mil</div>
+                <div class="stat-lbl">Snittmiltal</div>
+            </div>
+        </div>
+
+        <!-- Comparable listings -->
+        <div class="listings-card a4">
+            <div class="listings-head">
+                <span>Bil</span>
+                <span>År</span>
+                <span>Miltal</span>
+                <span>Pris</span>
+                <span></span>
+            </div>
+
+            <div class="listing-row">
+                <span class="l-name">Volvo V60 T4 Momentum</span>
+                <span class="l-mono">2019</span>
+                <span class="l-mono">6,2 mil</span>
+                <span class="l-price">249 000</span>
+                <a href="#" class="l-link">Blocket ↗</a>
+            </div>
+            <div class="listing-row">
+                <span class="l-name">Volvo V60 T4 Inscription</span>
+                <span class="l-mono">2019</span>
+                <span class="l-mono">5,8 mil</span>
+                <span class="l-price">269 000</span>
+                <a href="#" class="l-link">Blocket ↗</a>
+            </div>
+            <div class="listing-row">
+                <span class="l-name">Volvo V60 T4</span>
+                <span class="l-mono">2018</span>
+                <span class="l-mono">8,1 mil</span>
+                <span class="l-price low">235 000</span>
+                <a href="#" class="l-link">Blocket ↗</a>
+            </div>
+            <div class="listing-row">
+                <span class="l-name">Volvo V60 T4 R-Design</span>
+                <span class="l-mono">2020</span>
+                <span class="l-mono">4,5 mil</span>
+                <span class="l-price high">279 000</span>
+                <a href="#" class="l-link">Blocket ↗</a>
+            </div>
+            <div class="listing-row">
+                <span class="l-name">Volvo V60 T4 Momentum</span>
+                <span class="l-mono">2019</span>
+                <span class="l-mono">7,3 mil</span>
+                <span class="l-price">255 000</span>
+                <a href="#" class="l-link">Blocket ↗</a>
+            </div>
+            <div class="listing-row">
+                <span class="l-name">Volvo V60 T4 Business Pro</span>
+                <span class="l-mono">2019</span>
+                <span class="l-mono">9,0 mil</span>
+                <span class="l-price low">239 000</span>
+                <a href="#" class="l-link">Blocket ↗</a>
+            </div>
+        </div>
+
+        <div class="action-row a4">
+            <button class="btn-primary" onclick="showLanding()">Sök en ny bil</button>
+            <button class="btn-ghost">Dela rapport</button>
+        </div>
+
+    </div>
+</div>
+
+
+<footer>
+    <span>© 2025 Bilkoll</span>
+    <span>Data hämtas från Blocket.se &middot; Inte affilierat med Blocket eller Schibsted</span>
+</footer>
+
+
+<script>
+    /* ── State switcher ── */
+    function showState(id) {
+        document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showLanding() {
+        showState('landing');
+        document.getElementById('regInput').value = '';
+    }
+
+    /* ── Search flow ── */
+    function startSearch() {
+        const raw = document.getElementById('regInput').value.trim();
+        if (!raw || raw.replace(/\s/g,'').length < 4) {
+            document.getElementById('regInput').style.color = '#C93030';
+            setTimeout(() => document.getElementById('regInput').style.color = '', 600);
+            return;
+        }
+
+        const plate = raw.toUpperCase();
+        document.getElementById('loadingPlateText').textContent = plate;
+        showState('loading');
+
+        const steps = ['step1', 'step2', 'step3'];
+
+        // Reset
+        steps.forEach(id => {
+            document.getElementById(id).className = 'loading-step';
+        });
+
+        // Sequence: activate → done → next
+        steps.forEach((id, i) => {
+            setTimeout(() => {
+                document.getElementById(id).className = 'loading-step active';
+                setTimeout(() => {
+                    document.getElementById(id).className = 'loading-step done';
+                    if (i === steps.length - 1) {
+                        setTimeout(() => showState('results'), 350);
+                    }
+                }, 750);
+            }, i * 950);
+        });
+    }
+
+    /* ── Keyboard ── */
+    document.getElementById('regInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') startSearch();
+    });
+
+    /* ── Auto-format: ABC→ABC(space)123 ── */
+    document.getElementById('regInput').addEventListener('input', function () {
+        let v = this.value.replace(/\s/g, '').toUpperCase();
+        if (v.length > 3) v = v.slice(0, 3) + ' ' + v.slice(3, 6);
+        this.value = v;
+    });
+</script>
+</body>
+</html>
