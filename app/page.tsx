@@ -448,20 +448,43 @@ export default function Home() {
 
             {/* Car header */}
             <div className="car-header a1">
-              <h1 className="car-name">{vehicle.make} {vehicle.model}</h1>
-              <div className="chip-row">
+              <div className="car-header-top">
+                <div>
+                  <div className="car-make">{vehicle.make}</div>
+                  <h1 className="car-name">{vehicle.model}</h1>
+                </div>
+                <div className="car-plate-badge">
+                  <div className="car-plate-eu-strip">
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'1px', width:13 }}>
+                      {[0,1,2,3,4,5,6,7,8].map(i => (
+                        <span key={i} style={{ color:'var(--plate-yellow)', fontSize:'3.5px', textAlign:'center', lineHeight:1 }}>
+                          {i === 4 ? '' : '★'}
+                        </span>
+                      ))}
+                    </div>
+                    <span style={{ color:'var(--plate-yellow)', fontFamily:'var(--font-dm-sans)', fontSize:'9px', fontWeight:700, letterSpacing:'0.05em', marginTop:'2px' }}>S</span>
+                  </div>
+                  <span className="car-plate-text">{regInput || '—'}</span>
+                </div>
+              </div>
+              <div className="car-specs">
                 {[
-                  String(vehicle.year),
-                  vehicle.fuel,
-                  vehicle.hp ? `${vehicle.hp} hk` : null,
-                  vehicle.transmission,
-                  vehicle.drive,
-                  vehicle.color,
-                  vehicle.mileage != null ? `${fmt(vehicle.mileage)} mil` : null,
-                  vehicle.consumption != null ? `${vehicle.consumption} l/100km` : null,
-                  vehicle.emissions != null ? `${vehicle.emissions} g/km` : null,
-                  vehicle.owners != null ? `${vehicle.owners} ägare` : null,
-                ].filter(Boolean).map(c => <span key={c} className="chip">{c}</span>)}
+                  { val: String(vehicle.year),      lbl: 'Årsmodell' },
+                  { val: vehicle.fuel,              lbl: 'Drivmedel' },
+                  vehicle.transmission ? { val: vehicle.transmission, lbl: 'Växellåda' } : null,
+                  vehicle.hp           ? { val: `${vehicle.hp} hk`,  lbl: 'Effekt'    } : null,
+                  vehicle.mileage != null ? { val: `${fmt(vehicle.mileage)} mil`, lbl: 'Miltal' } : null,
+                  vehicle.color        ? { val: vehicle.color,        lbl: 'Färg'      } : null,
+                  vehicle.owners != null ? { val: `${vehicle.owners}`, lbl: 'Ägare'   } : null,
+                  vehicle.consumption != null ? { val: `${vehicle.consumption} l/100km`, lbl: 'Förbrukning' } : null,
+                  vehicle.drive        ? { val: vehicle.drive,        lbl: 'Drivning'  } : null,
+                  vehicle.emissions != null ? { val: `${vehicle.emissions} g/km`, lbl: 'CO₂' } : null,
+                ].filter((s): s is { val: string; lbl: string } => s !== null).map(s => (
+                  <div key={s.lbl} className="spec-item">
+                    <span className="spec-val">{s.val}</span>
+                    <span className="spec-lbl">{s.lbl}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
