@@ -80,7 +80,7 @@ async function biluppgifter(reg: string) {
 
   let title = $('title').text().trim()
   title = title.replace(/\s*-\s*Biluppgifter\.se.*$/i, '').trim()
-  title = title.replace(/^[A-ZÅÄÖ]{2,3}\d{2,3}\s+/, '').trim()
+  title = title.replace(/^[A-ZÅÄÖ]{2,3}\d{2,3}[A-ZÅÄÖ]{0,2}\s+/, '').trim()
   title = title.replace(/,\s*\d+hk.*$/i, '').trim()
   title = title.replace(/,\s*(19|20)\d{2}.*$/, '').trim()
   title = title.replace(/\s+(19|20)\d{2}$/, '').trim()
