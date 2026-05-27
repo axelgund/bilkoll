@@ -603,25 +603,22 @@ export default function Home() {
               <div className="listings-head">
                 <span>Bil</span><span>År</span><span>Miltal</span><span>Pris</span><span />
               </div>
-              {[...stats.classified].sort((a, b) => b.price - a.price).map((l, i) => {
+              {[...stats.classified]
+                .filter(l => l.matched)
+                .filter(l => l.price >= stats.normMed * 0.60 && l.price <= stats.normMed * 1.50)
+                .sort((a, b) => Math.abs(a.normPrice - stats.normMed) - Math.abs(b.normPrice - stats.normMed))
+                .slice(0, 15)
+                .map((l, i) => {
                 const tier = l.normPrice < stats.normMed * 0.94 ? 'low'
                            : l.normPrice > stats.normMed * 1.06 ? 'high' : ''
                 return (
-                  <div key={i} className={`listing-row${l.matched ? '' : ' mismatch'}`} style={{ animationDelay: `${0.22 + i * 0.015}s` }}>
+                  <div key={i} className="listing-row" style={{ animationDelay: `${0.22 + i * 0.015}s` }}>
                     <span className="l-name">
                       <span
-                        className={`match-dot ${l.matched ? 'ok' : 'warn'}`}
-                        title={
-                          !l.yearOk ? 'Avvikande årsmodell'
-                          : !l.fuelOk ? 'Avvikande drivmedel'
-                          : 'Matchar specifikation'
-                        }
+                        className="match-dot ok"
+                        title="Matchar specifikation"
                         role="img"
-                        aria-label={
-                          !l.yearOk ? 'Varning: Årsmodell stämmer inte'
-                          : !l.fuelOk ? 'Varning: Drivmedel stämmer inte'
-                          : 'Matchar specifikation'
-                        }
+                        aria-label="Matchar specifikation"
                       />
                       {l.title}
                     </span>
