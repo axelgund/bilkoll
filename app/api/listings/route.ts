@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const url = new URL(SEARCH_URL)
-    url.searchParams.set('q', `${make} ${model} ${year}`)
+    url.searchParams.set('q', `${make} ${model}`)
     url.searchParams.set('cg', '1020')
 
     const res = await fetch(`https://api.scraperapi.com/?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(url.toString())}`)
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     const listings: object[] = []
 
     $('article').each((_, article) => {
-      if (listings.length >= 20) return false as unknown as void
+      if (listings.length >= 30) return false as unknown as void
 
       const el = $(article)
 

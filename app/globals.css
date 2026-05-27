@@ -582,6 +582,26 @@ body {
   opacity: 0.7;
 }
 
+.confidence-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.confidence-badge.high   { color: var(--good); background: var(--good-bg); }
+.confidence-badge.medium { color: var(--fair); background: var(--fair-bg); }
+.confidence-badge.low    { color: var(--bad);  background: var(--bad-bg);  }
+
+.neg-percentile {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 8px;
+  font-style: italic;
+}
+
 .neg-right { text-align: right; flex-shrink: 0; }
 
 .neg-price-label { font-size: 12px; color: var(--text-2); margin-bottom: 5px; }

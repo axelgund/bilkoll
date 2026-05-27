@@ -179,6 +179,21 @@ export default function Home() {
     const listedPct = asking ? Math.round(((asking - min) / range) * 90 + 5) : null
     const medianPct = Math.round(((med - min) / range) * 90 + 5)
 
+    const confidence: 'high' | 'medium' | 'low' =
+      matchedSet.length >= 10 ? 'high' :
+      matchedSet.length >= 5  ? 'medium' : 'low'
+
+    const normMean = normPrices.reduce((a, b) => a + b, 0) / normPrices.length
+    const spread   = Math.round(Math.sqrt(
+      normPrices.reduce((a, b) => a + Math.pow(b - normMean, 2), 0) / normPrices.length
+    ))
+
+    let askingPercentile: number | null = null
+    if (asking) {
+      const below = rawPrices.filter(p => p < asking).length
+      askingPercentile = Math.round((below / rawPrices.length) * 100)
+    }
+
     return {
       med, normMed, min, max, avgMil,
       count: forStats.length,
@@ -188,6 +203,9 @@ export default function Home() {
       suggestedLow, suggestedHigh,
       classified,
       mileageNormalized: carMil !== null,
+      confidence,
+      spread,
+      askingPercentile,
     }
   }, [listings, askingPrice, vehicle])
 
@@ -206,7 +224,7 @@ export default function Home() {
       const r = await fetch(`/api/lookup?reg=${plate}`)
       if (r.ok) { const d = await r.json(); if (d) v = d }
     } catch { /* network error */ }
-    await delay(800)
+    await delay(200)
 
     if (!v) {
       setAppState('error')
@@ -216,7 +234,7 @@ export default function Home() {
     setVehicle(v)
     setSteps(['done','idle','idle'])
 
-    await delay(200)
+    await delay(100)
     setSteps(['done','active','idle'])
     try {
       const model = encodeURIComponent(baseModel(v.model))
@@ -226,15 +244,15 @@ export default function Home() {
         if (data.length > 0) setListings(data)
       }
     } catch { /* keep mock listings */ }
-    await delay(500)
+    await delay(200)
     setSteps(['done','done','idle'])
 
-    await delay(200)
+    await delay(100)
     setSteps(['done','done','active'])
-    await delay(700)
+    await delay(350)
     setSteps(['done','done','done'])
 
-    await delay(350)
+    await delay(100)
     window.history.pushState({}, '', `?reg=${plate}`)
     setAppState('results')
   }
@@ -448,7 +466,18 @@ export default function Home() {
                   {stats.count} annonser
                   {stats.filteredOut > 0 ? ` · ${stats.filteredOut} filtrerade` : ''}
                   {vehicle.owners != null ? ` · ${vehicle.owners} ägare` : ''}
+                  {' · '}
+                  <span className={`confidence-badge ${stats.confidence}`}>
+                    {stats.confidence === 'high' ? 'Hög säkerhet' : stats.confidence === 'medium' ? 'Medel säkerhet' : 'Låg säkerhet'}
+                  </span>
                 </div>
+                {stats.askingPercentile !== null && (
+                  <div className="neg-percentile">
+                    {stats.askingPercentile > 50
+                      ? `Dyrare än ${stats.askingPercentile}% av liknande annonser`
+                      : `Billigare än ${100 - stats.askingPercentile}% av liknande annonser`}
+                  </div>
+                )}
               </div>
 
               <div className="neg-right">
@@ -546,7 +575,7 @@ export default function Home() {
               <div className="listings-head">
                 <span>Bil</span><span>År</span><span>Miltal</span><span>Pris</span><span />
               </div>
-              {stats.classified.map((l, i) => {
+              {[...stats.classified].sort((a, b) => b.price - a.price).map((l, i) => {
                 const tier = l.normPrice < stats.normMed * 0.94 ? 'low'
                            : l.normPrice > stats.normMed * 1.06 ? 'high' : ''
                 return (
