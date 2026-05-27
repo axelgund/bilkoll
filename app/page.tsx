@@ -106,15 +106,16 @@ function useCountUp(target: number | null, duration = 750, delay = 220): number 
   useEffect(() => {
     if (target === null) { setVal(null); return }
     setVal(0)
+    const final = target
     let raf: number
     const t = setTimeout(() => {
       const t0 = performance.now()
       function tick(now: number) {
         const p = Math.min((now - t0) / duration, 1)
         const e = 1 - Math.pow(1 - p, 3)
-        setVal(Math.round(target * e))
+        setVal(Math.round(final * e))
         if (p < 1) raf = requestAnimationFrame(tick)
-        else setVal(target)
+        else setVal(final)
       }
       raf = requestAnimationFrame(tick)
     }, delay)
