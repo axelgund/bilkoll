@@ -605,7 +605,6 @@ export default function Home() {
               </div>
               {[...stats.classified]
                 .filter(l => l.matched)
-                .filter(l => l.price >= stats.normMed * 0.65 && l.price <= stats.normMed * 1.45)
                 .sort((a, b) => Math.abs(a.normPrice - stats.normMed) - Math.abs(b.normPrice - stats.normMed))
                 .slice(0, 12)
                 .map((l, i) => {
