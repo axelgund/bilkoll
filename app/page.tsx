@@ -101,6 +101,28 @@ function baseModel(model: string) { return model.split(' ')[0] }
 
 function fmt(n: number) { return n.toLocaleString('sv-SE') }
 
+function useCountUp(target: number | null, duration = 750, delay = 220): number | null {
+  const [val, setVal] = useState<number | null>(null)
+  useEffect(() => {
+    if (target === null) { setVal(null); return }
+    setVal(0)
+    let raf: number
+    const t = setTimeout(() => {
+      const t0 = performance.now()
+      function tick(now: number) {
+        const p = Math.min((now - t0) / duration, 1)
+        const e = 1 - Math.pow(1 - p, 3)
+        setVal(Math.round(target * e))
+        if (p < 1) raf = requestAnimationFrame(tick)
+        else setVal(target)
+      }
+      raf = requestAnimationFrame(tick)
+    }, delay)
+    return () => { clearTimeout(t); cancelAnimationFrame(raf) }
+  }, [target, duration, delay])
+  return val
+}
+
 // ── EU plate strip ────────────────────────────────────────────────────────────
 
 function EuStrip() {
@@ -208,6 +230,11 @@ export default function Home() {
       askingPercentile,
     }
   }, [listings, askingPrice, vehicle])
+
+  const animNormMed = useCountUp(stats?.normMed ?? null)
+  const animAsking  = useCountUp(stats?.asking  ?? null)
+  const animCount   = useCountUp(stats?.count   ?? null)
+  const animAvgMil  = useCountUp(stats?.avgMil  ?? null)
 
   // ── Search flow ─────────────────────────────────────────────────────────────
 
@@ -484,7 +511,7 @@ export default function Home() {
                 {stats.asking ? (
                   <>
                     <div className="neg-price-label">Begärt pris</div>
-                    <div className="neg-price-num">{fmt(stats.asking)} kr</div>
+                    <div className="neg-price-num">{fmt(animAsking ?? stats.asking)} kr</div>
                     <div className="neg-price-sub">
                       Rimligt bud: {fmt(stats.suggestedLow)}–{fmt(stats.suggestedHigh)}
                     </div>
@@ -494,7 +521,7 @@ export default function Home() {
                     <div className="neg-price-label">
                       {stats.mileageNormalized ? 'Miletalsjusterat median' : 'Marknadsmedian'}
                     </div>
-                    <div className="neg-price-num">{fmt(stats.normMed)} kr</div>
+                    <div className="neg-price-num">{fmt(animNormMed ?? stats.normMed)} kr</div>
                   </>
                 )}
               </div>
@@ -555,17 +582,17 @@ export default function Home() {
             {/* Stats */}
             <div className="stats-grid a3">
               <div className="stat-card">
-                <div className="stat-val">{stats.count}</div>
+                <div className="stat-val">{animCount ?? stats.count}</div>
                 <div className="stat-lbl">Matchande annonser</div>
               </div>
               <div className="stat-card">
-                <div className="stat-val">{fmt(stats.normMed)}</div>
+                <div className="stat-val">{fmt(animNormMed ?? stats.normMed)}</div>
                 <div className="stat-lbl">
                   {stats.mileageNormalized ? 'Justerat median (kr)' : 'Medianpris (kr)'}
                 </div>
               </div>
               <div className="stat-card">
-                <div className="stat-val">{stats.avgMil !== null ? `${fmt(stats.avgMil)} mil` : '—'}</div>
+                <div className="stat-val">{stats.avgMil !== null ? `${fmt(animAvgMil ?? stats.avgMil)} mil` : '—'}</div>
                 <div className="stat-lbl">Snittmiltal</div>
               </div>
             </div>
@@ -579,7 +606,7 @@ export default function Home() {
                 const tier = l.normPrice < stats.normMed * 0.94 ? 'low'
                            : l.normPrice > stats.normMed * 1.06 ? 'high' : ''
                 return (
-                  <div key={i} className={`listing-row${l.matched ? '' : ' mismatch'}`}>
+                  <div key={i} className={`listing-row${l.matched ? '' : ' mismatch'}`} style={{ animationDelay: `${0.22 + i * 0.015}s` }}>
                     <span className="l-name">
                       <span
                         className={`match-dot ${l.matched ? 'ok' : 'warn'}`}

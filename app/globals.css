@@ -355,6 +355,7 @@ body {
   overflow: hidden;
   margin-bottom: 40px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: platePulse 2s ease-in-out infinite;
 }
 
 .loading-plate-eu {
@@ -707,6 +708,13 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
   position: relative;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.04);
 }
 
 .stat-card::before {
@@ -759,11 +767,13 @@ body {
   align-items: center;
   border-bottom: 1px solid var(--border);
   font-size: 14px;
-  transition: background 0.12s ease;
+  transition: background 0.12s, box-shadow 0.15s;
+  animation: rowIn 0.28s cubic-bezier(0.2, 0, 0.2, 1) both;
 }
 
 .listing-row:last-child { border-bottom: none; }
-.listing-row:hover { background: rgba(0, 82, 155, 0.03); }
+.listing-row:hover { background: rgba(0, 82, 155, 0.04); box-shadow: inset 3px 0 0 var(--accent); }
+.listing-row.mismatch:hover { box-shadow: inset 3px 0 0 var(--fair); }
 
 .l-name {
   font-weight: 500;
@@ -782,7 +792,7 @@ body {
 .match-dot.ok   { background: var(--good); opacity: 0.65; }
 .match-dot.warn { background: var(--fair); opacity: 0.9; }
 
-.listing-row.mismatch { opacity: 0.72; }
+.listing-row.mismatch { filter: opacity(0.65); }
 
 .l-mono {
   font-family: var(--font-dm-mono), 'DM Mono', monospace;
@@ -877,8 +887,18 @@ body {
 
 /* ── Animations ──────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rowIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes platePulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  50%       { box-shadow: 0 8px 36px rgba(0, 82, 155, 0.22), 0 4px 20px rgba(0,0,0,0.06); }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -893,10 +913,10 @@ body {
   50% { opacity: 0.7; }
 }
 
-.a1 { animation: fadeUp 0.45s ease 0.00s both; }
-.a2 { animation: fadeUp 0.45s ease 0.10s both; }
-.a3 { animation: fadeUp 0.45s ease 0.18s both; }
-.a4 { animation: fadeUp 0.45s ease 0.26s both; }
+.a1 { animation: fadeUp 0.4s cubic-bezier(0.2, 0, 0.2, 1) 0.00s both; }
+.a2 { animation: fadeUp 0.4s cubic-bezier(0.2, 0, 0.2, 1) 0.08s both; }
+.a3 { animation: fadeUp 0.4s cubic-bezier(0.2, 0, 0.2, 1) 0.15s both; }
+.a4 { animation: fadeUp 0.4s cubic-bezier(0.2, 0, 0.2, 1) 0.22s both; }
 
 /* ── Focus states & accessibility ───────────── */
 button:focus-visible, input:focus-visible, a:focus-visible {
