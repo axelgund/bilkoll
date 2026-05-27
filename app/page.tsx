@@ -605,9 +605,10 @@ export default function Home() {
               </div>
               {[...stats.classified]
                 .filter(l => l.matched)
-                .filter(l => l.price >= stats.normMed * 0.60 && l.price <= stats.normMed * 1.50)
+                .filter(l => l.year === null || Math.abs(l.year - vehicle.year) <= 1)
+                .filter(l => l.price >= stats.normMed * 0.75 && l.price <= stats.normMed * 1.30)
                 .sort((a, b) => Math.abs(a.normPrice - stats.normMed) - Math.abs(b.normPrice - stats.normMed))
-                .slice(0, 15)
+                .slice(0, 12)
                 .map((l, i) => {
                 const tier = l.normPrice < stats.normMed * 0.94 ? 'low'
                            : l.normPrice > stats.normMed * 1.06 ? 'high' : ''
